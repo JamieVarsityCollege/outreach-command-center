@@ -51,7 +51,7 @@ function compileData() {
       brand: 'FinYang AI',
       brandKey: 'finyang',
       dailySafeLimit: a.dailySafeLimit || 80,
-      sentToday: a.domain === 'finyang.net' ? 77 : (a.domain === 'hello.finyang.net' ? 90 : (a.domain === 'greetings.finyang.net' ? 90 : 12)),
+      sentToday: a.domain === 'finyang.net' ? 77 : 90,
     })),
     ...slipscanAccs.map((a) => ({
       id: a.id,

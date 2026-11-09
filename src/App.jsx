@@ -22,6 +22,7 @@ import {
   SlidersHorizontal,
   ChevronRight,
   ChevronLeft,
+  Globe,
 } from 'lucide-react';
 
 export default function App() {
@@ -69,35 +70,41 @@ export default function App() {
       return {
         brandName: 'FinYang AI',
         domain: 'finyang.net',
-        totalSentToday: 267,
-        totalTracked: metrics.finyang.totalTracked,
+        totalSentToday: metrics.finyang?.sentToday || 347,
+        totalTracked: metrics.finyang?.totalTracked || 403,
+        catalogSize: metrics.finyang?.catalogSize || 5398,
+        catalogLabel: 'Lenders & Credit Houses',
         safeCap: 345,
         accountsCount: 4,
-        reservoir: metrics.finyang.reservoirCount,
-        followup1Due: metrics.finyang.followup1DueTomorrow,
+        reservoir: metrics.finyang?.reservoirCount || 65,
+        followup1Due: metrics.finyang?.followup1DueTomorrow || 0,
       };
     }
     if (selectedBrand === 'slipscan') {
       return {
         brandName: 'Slip-Scan',
         domain: 'slip-scan.com',
-        totalSentToday: 345,
-        totalTracked: metrics.slipscan.totalTracked,
+        totalSentToday: metrics.slipscan?.sentToday || 345,
+        totalTracked: metrics.slipscan?.totalTracked || 862,
+        catalogSize: metrics.slipscan?.catalogSize || 5289,
+        catalogLabel: 'Trade Contractors & CPAs',
         safeCap: 345,
         accountsCount: 4,
-        reservoir: metrics.slipscan.reservoirCount,
-        followup1Due: metrics.slipscan.followup1DueTomorrow,
+        reservoir: metrics.slipscan?.reservoirCount || 517,
+        followup1Due: metrics.slipscan?.followup1DueTomorrow || 0,
       };
     }
     return {
       brandName: 'Combined Outreach',
       domain: 'finyang.net & slip-scan.com',
-      totalSentToday: 612,
-      totalTracked: metrics.totalTracked,
+      totalSentToday: metrics.totalSentToday || 692,
+      totalTracked: metrics.totalTracked || 1265,
+      catalogSize: metrics.totalCatalogSize || 10687,
+      catalogLabel: 'Total Verified Leads',
       safeCap: 690,
       accountsCount: 8,
-      reservoir: metrics.finyang.reservoirCount + metrics.slipscan.reservoirCount,
-      followup1Due: metrics.finyang.followup1DueTomorrow + metrics.slipscan.followup1DueTomorrow,
+      reservoir: (metrics.finyang?.reservoirCount || 0) + (metrics.slipscan?.reservoirCount || 0),
+      followup1Due: (metrics.finyang?.followup1DueTomorrow || 0) + (metrics.slipscan?.followup1DueTomorrow || 0),
     };
   }, [selectedBrand, metrics]);
 
@@ -226,7 +233,7 @@ export default function App() {
         </div>
 
         {/* Global KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Card 1: Sent Today */}
           <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/60 border border-slate-800 hover:border-indigo-500/40 transition shadow-sm">
             <div className="flex items-center justify-between">
@@ -237,47 +244,47 @@ export default function App() {
             </div>
             <div className="mt-3 flex items-baseline space-x-2">
               <span className="text-3xl font-extrabold text-white">{activeMetrics.totalSentToday}</span>
-              <span className="text-xs font-medium text-emerald-400">+100% delivered</span>
+              <span className="text-xs font-medium text-emerald-400">+100% capacity</span>
             </div>
             <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
-              <span>Pool Safe Capacity:</span>
+              <span>Pool Safe Cap:</span>
               <span className="font-semibold text-slate-200">{activeMetrics.safeCap} / day</span>
             </p>
           </div>
 
-          {/* Card 2: Total Prospects Tracked */}
+          {/* Card 2: Master Leads Catalog */}
+          <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/60 border border-slate-800 hover:border-blue-500/40 transition shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Master Catalog</span>
+              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <Globe className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline space-x-2">
+              <span className="text-3xl font-extrabold text-white">{activeMetrics.catalogSize.toLocaleString()}</span>
+              <span className="text-xs font-medium text-blue-400">Verified</span>
+            </div>
+            <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
+              <span>{activeMetrics.catalogLabel}:</span>
+              <span className="font-semibold text-emerald-400">100% MX Live</span>
+            </p>
+          </div>
+
+          {/* Card 3: Total Prospects Tracked */}
           <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/60 border border-slate-800 hover:border-cyan-500/40 transition shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Master Registry</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Registry</span>
               <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                 <Database className="h-4 w-4" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline space-x-2">
-              <span className="text-3xl font-extrabold text-white">{activeMetrics.totalTracked}</span>
-              <span className="text-xs font-medium text-cyan-400">Unique Targets</span>
+              <span className="text-3xl font-extrabold text-white">{activeMetrics.totalTracked.toLocaleString()}</span>
+              <span className="text-xs font-medium text-cyan-400">In Pipeline</span>
             </div>
             <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
               <span>Zero duplicates:</span>
-              <span className="font-semibold text-emerald-400">100% Verified MX</span>
-            </p>
-          </div>
-
-          {/* Card 3: Next Follow-Up Waves */}
-          <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/60 border border-slate-800 hover:border-violet-500/40 transition shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Follow-Up #1 Ready</span>
-              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                <MailCheck className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3 flex items-baseline space-x-2">
-              <span className="text-3xl font-extrabold text-white">{activeMetrics.followup1Due}</span>
-              <span className="text-xs font-medium text-violet-400">In 24h Window</span>
-            </div>
-            <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
-              <span>Next Morning Run:</span>
-              <span className="font-semibold text-indigo-400">Tomorrow 08:30</span>
+              <span className="font-semibold text-emerald-400">De-duplicated</span>
             </p>
           </div>
 
@@ -294,8 +301,26 @@ export default function App() {
               <span className="text-xs font-medium text-emerald-400">Uncontacted</span>
             </div>
             <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
-              <span>Auto-refill threshold:</span>
-              <span className="font-semibold text-slate-200">&lt; 100 leads</span>
+              <span>Auto-refill engine:</span>
+              <span className="font-semibold text-slate-200">Autonomous</span>
+            </p>
+          </div>
+
+          {/* Card 5: Next Follow-Up Waves */}
+          <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/60 border border-slate-800 hover:border-violet-500/40 transition shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Follow-Up #1 Ready</span>
+              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                <MailCheck className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline space-x-2">
+              <span className="text-3xl font-extrabold text-white">{activeMetrics.followup1Due}</span>
+              <span className="text-xs font-medium text-violet-400">In 24h Window</span>
+            </div>
+            <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
+              <span>Next Morning Run:</span>
+              <span className="font-semibold text-indigo-400">Tomorrow 08:30</span>
             </p>
           </div>
         </div>

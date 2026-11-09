@@ -6,8 +6,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const FINYANG_REGISTRY = '/Users/jamie/Documents/VS-Projects/finyang/app/tools/workflow/registry.json';
 const SLIPSCAN_REGISTRY = '/Users/jamie/Documents/VS-Projects/slip-scan-web/outreach/workflow/registry.json';
+
+const FINYANG_CATALOG = '/Users/jamie/Documents/VS-Projects/finyang/app/tools/workflow/master_leads_catalog.json';
+const SLIPSCAN_CATALOG = '/Users/jamie/Documents/VS-Projects/slip-scan-web/outreach/workflow/master_leads_catalog.json';
+
 const FINYANG_ACCOUNTS = '/Users/jamie/Documents/VS-Projects/finyang/app/tools/resend_accounts.json';
 const SLIPSCAN_ACCOUNTS = '/Users/jamie/Documents/VS-Projects/slip-scan-web/outreach/resend_accounts.json';
+
 const FINYANG_LOG = '/Users/jamie/Documents/VS-Projects/finyang/app/tools/outreach_sent_log.csv';
 const SLIPSCAN_LOG = '/Users/jamie/Documents/VS-Projects/slip-scan-web/outreach/outreach_sent_log.csv';
 
@@ -29,6 +34,9 @@ function compileData() {
   const finyangReg = fs.existsSync(FINYANG_REGISTRY) ? JSON.parse(fs.readFileSync(FINYANG_REGISTRY, 'utf-8')) : {};
   const slipscanReg = fs.existsSync(SLIPSCAN_REGISTRY) ? JSON.parse(fs.readFileSync(SLIPSCAN_REGISTRY, 'utf-8')) : {};
   
+  const finyangCat = fs.existsSync(FINYANG_CATALOG) ? JSON.parse(fs.readFileSync(FINYANG_CATALOG, 'utf-8')) : [];
+  const slipscanCat = fs.existsSync(SLIPSCAN_CATALOG) ? JSON.parse(fs.readFileSync(SLIPSCAN_CATALOG, 'utf-8')) : [];
+
   const finyangAccs = fs.existsSync(FINYANG_ACCOUNTS) ? JSON.parse(fs.readFileSync(FINYANG_ACCOUNTS, 'utf-8')) : [];
   const slipscanAccs = fs.existsSync(SLIPSCAN_ACCOUNTS) ? JSON.parse(fs.readFileSync(SLIPSCAN_ACCOUNTS, 'utf-8')) : [];
 
@@ -71,8 +79,10 @@ function compileData() {
       totalSentToday: finyangLogStats.today + slipscanLogStats.today,
       totalTracked: allProspects.length,
       totalPoolCapacity: cleanAccounts.reduce((sum, a) => sum + a.dailySafeLimit, 0),
+      totalCatalogSize: finyangCat.length + slipscanCat.length,
       finyang: {
         totalTracked: Object.keys(finyangReg).length,
+        catalogSize: finyangCat.length,
         sentToday: finyangLogStats.today,
         totalSentAllTime: finyangLogStats.total,
         safeCap: 345,
@@ -81,6 +91,7 @@ function compileData() {
       },
       slipscan: {
         totalTracked: Object.keys(slipscanReg).length,
+        catalogSize: slipscanCat.length,
         sentToday: slipscanLogStats.today,
         totalSentAllTime: slipscanLogStats.total,
         safeCap: 345,
@@ -94,7 +105,7 @@ function compileData() {
 
   fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(payload, null, 2), 'utf-8');
-  console.log(`Compiled data for ${allProspects.length} prospects and ${cleanAccounts.length} accounts to ${OUTPUT_FILE}`);
+  console.log(`Compiled data: ${allProspects.length} registry prospects, ${cleanAccounts.length} accounts, and ${payload.metrics.totalCatalogSize} master catalog leads to ${OUTPUT_FILE}`);
 }
 
 compileData();

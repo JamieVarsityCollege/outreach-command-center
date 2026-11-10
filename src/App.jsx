@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import initialData from './data/campaignData.json';
 import {
   Send,
@@ -30,9 +30,32 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [campaignData, setCampaignData] = useState(initialData);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const pageSize = 15;
 
-  const { metrics, accounts, prospects, lastUpdated } = initialData;
+  const fetchLiveData = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch('/api/campaign-data', { cache: 'no-store' });
+      if (res.ok) {
+        const live = await res.json();
+        if (live && live.metrics && Array.isArray(live.prospects)) {
+          setCampaignData(live);
+        }
+      }
+    } catch {
+      // Fallback gracefully to bundled snapshot
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveData();
+  }, [fetchLiveData]);
+
+  const { metrics, accounts, prospects, lastUpdated, liveSynced } = campaignData;
 
   // Filter accounts by brand
   const filteredAccounts = useMemo(() => {
@@ -70,41 +93,41 @@ export default function App() {
       return {
         brandName: 'FinYang AI',
         domain: 'finyang.net',
-        totalSentToday: metrics.finyang?.sentToday || 347,
-        totalTracked: metrics.finyang?.totalTracked || 403,
-        catalogSize: metrics.finyang?.catalogSize || 5398,
+        totalSentToday: metrics.finyang?.sentToday ?? 0,
+        totalTracked: metrics.finyang?.totalTracked ?? 0,
+        catalogSize: metrics.finyang?.catalogSize ?? 5398,
         catalogLabel: 'Lenders & Credit Houses',
         safeCap: 345,
         accountsCount: 4,
-        reservoir: metrics.finyang?.reservoirCount || 65,
-        followup1Due: metrics.finyang?.followup1DueTomorrow || 0,
+        reservoir: metrics.finyang?.reservoirCount ?? 0,
+        followup1Due: metrics.finyang?.followup1DueTomorrow ?? 0,
       };
     }
     if (selectedBrand === 'slipscan') {
       return {
         brandName: 'Slip-Scan',
         domain: 'slip-scan.com',
-        totalSentToday: metrics.slipscan?.sentToday || 345,
-        totalTracked: metrics.slipscan?.totalTracked || 862,
-        catalogSize: metrics.slipscan?.catalogSize || 5289,
+        totalSentToday: metrics.slipscan?.sentToday ?? 0,
+        totalTracked: metrics.slipscan?.totalTracked ?? 0,
+        catalogSize: metrics.slipscan?.catalogSize ?? 5305,
         catalogLabel: 'Trade Contractors & CPAs',
         safeCap: 345,
         accountsCount: 4,
-        reservoir: metrics.slipscan?.reservoirCount || 517,
-        followup1Due: metrics.slipscan?.followup1DueTomorrow || 0,
+        reservoir: metrics.slipscan?.reservoirCount ?? 0,
+        followup1Due: metrics.slipscan?.followup1DueTomorrow ?? 0,
       };
     }
     return {
       brandName: 'Combined Outreach',
       domain: 'finyang.net & slip-scan.com',
-      totalSentToday: metrics.totalSentToday || 692,
-      totalTracked: metrics.totalTracked || 1265,
-      catalogSize: metrics.totalCatalogSize || 10687,
+      totalSentToday: metrics.totalSentToday ?? 0,
+      totalTracked: metrics.totalTracked ?? 0,
+      catalogSize: metrics.totalCatalogSize ?? 10703,
       catalogLabel: 'Total Verified Leads',
       safeCap: 690,
       accountsCount: 8,
-      reservoir: (metrics.finyang?.reservoirCount || 0) + (metrics.slipscan?.reservoirCount || 0),
-      followup1Due: (metrics.finyang?.followup1DueTomorrow || 0) + (metrics.slipscan?.followup1DueTomorrow || 0),
+      reservoir: (metrics.finyang?.reservoirCount ?? 0) + (metrics.slipscan?.reservoirCount ?? 0),
+      followup1Due: (metrics.finyang?.followup1DueTomorrow ?? 0) + (metrics.slipscan?.followup1DueTomorrow ?? 0),
     };
   }, [selectedBrand, metrics]);
 
@@ -226,9 +249,18 @@ export default function App() {
             </button>
           </div>
 
-          <div className="text-xs text-slate-400 flex items-center space-x-2">
-            <RefreshCw className="h-3.5 w-3.5 text-slate-500 animate-spin-slow" />
-            <span>Synced: {new Date(lastUpdated).toLocaleTimeString()} SAST</span>
+          <div className="flex items-center space-x-3">
+            <span className="text-xs text-slate-400">
+              {liveSynced ? 'Live API' : 'Snapshot'}: {new Date(lastUpdated).toLocaleTimeString()} SAST
+            </span>
+            <button
+              onClick={fetchLiveData}
+              disabled={isRefreshing}
+              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center space-x-1.5 transition disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-cyan-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Syncing...' : 'Refresh Live'}</span>
+            </button>
           </div>
         </div>
 
@@ -244,7 +276,9 @@ export default function App() {
             </div>
             <div className="mt-3 flex items-baseline space-x-2">
               <span className="text-3xl font-extrabold text-white">{activeMetrics.totalSentToday}</span>
-              <span className="text-xs font-medium text-emerald-400">+100% capacity</span>
+              <span className="text-xs font-medium text-emerald-400">
+                {Math.min(100, Math.round((activeMetrics.totalSentToday / activeMetrics.safeCap) * 100))}% of cap
+              </span>
             </div>
             <p className="mt-2 text-xs text-slate-400 flex items-center justify-between">
               <span>Pool Safe Cap:</span>
